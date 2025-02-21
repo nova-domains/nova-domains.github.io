@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Domains</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="logo.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.3/cdn.min.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .status-checking { animation: pulse 1.5s infinite; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen font-sans p-4 md:p-8" x-data="domainChecker()">
+    <div class="max-w-3xl mx-auto">
+        <!-- header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center space-x-3 mb-6">
+                <img src="logo.png" alt="Nova Logo" class="h-8 w-8">
+                <span class="text-2xl font-bold text-purple-400">Nova Domains</span>
+            </div>
+            <p class="text-gray-400">Check which Nova domains are currently accessible. If one domain is blocked, try another!</p>
+            <button @click="checkAllDomains()" 
+                    class="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors duration-300 flex items-center space-x-2 mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isChecking}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span x-text="isChecking ? 'Checking...' : 'Check All Domains'"></span>
+            </button>
+        </div>
+
+        <!-- domains list -->
+        <div class="space-y-3">
+            <template x-for="domain in domains" :key="domain.url">
+                <div class="bg-gray-800 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h3 class="font-medium" x-text="domain.url"></h3>
+                            <button @click="copyToClipboard(domain.url)" 
+                                    class="text-gray-400 hover:text-purple-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-gray-400 text-sm" x-text="domain.description"></p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="flex items-center space-x-2">
+                            <div :class="{
+                                'bg-green-500': domain.status === 'online',
+                                'bg-red-500': domain.status === 'offline',
+                                'bg-orange-500': domain.status === 'blocked',
+                                'bg-yellow-500': domain.status === 'checking',
+                                'bg-gray-500': domain.status === 'unknown'
+                            }" class="w-2 h-2 rounded-full"></div>
+                            <div class="flex flex-col">
+                                <span :class="{
+                                    'text-green-500': domain.status === 'online',
+                                    'text-red-500': domain.status === 'offline',
+                                    'text-orange-500': domain.status === 'blocked',
+                                    'text-yellow-500': domain.status === 'checking',
+                                    'text-gray-500': domain.status === 'unknown',
+                                    'status-checking': domain.status === 'checking'
+                                }" class="text-sm" x-text="domain.status"></span>
+                                <span x-show="domain.error" class="text-xs text-gray-400" x-text="domain.error"></span>
+                            </div>
+                        </div>
+                        <a :href="'https://' + domain.url" 
+                           target="_blank"
+                           class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-base font-medium min-w-[100px] text-center">
+                            Visit
+                        </a>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- help section -->
+        <div class="mt-8 bg-gray-800 rounded-lg p-4">
+            <h2 class="font-medium mb-2">Having Issues?</h2>
+            <ul class="text-sm text-gray-300 space-y-1 list-disc list-inside">
+                <li>Try a different domain from the list above</li>
+                <li>Use a VPN if your ISP is blocking access</li>
+            </ul>
+            <p class="mt-3 text-sm text-gray-400">
+                Need help? Join our <a href="https://discord.gg/s9kUZw7CqP" target="_blank" class="text-purple-400 hover:text-purple-300">Discord</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function domainChecker() {
+            return {
+                isChecking: false,
+                domains: [
+                    {
+                        url: 'novastream.top',
+                        description: 'Main domain',
+                        status: 'unknown',
+                        error: null
+                    },
+                    {
+                        url: 'novastream.vercel.app',
+                        description: 'Vercel mirror',
+                        status: 'unknown',
+                        error: null
+                    },
+                    {
+                        url: 'novastream-alt.netlify.app',
+                        description: 'Netlify mirror',
+                        status: 'unknown',
+                        error: null
+                    },
+                    {
+                        url: 'novastream.onrender.com',
+                        description: 'Render mirror',
+                        status: 'unknown',
+                        error: null
+                    },
+                    {
+                        url: 'nova-2bn.pages.dev',
+                        description: 'Cloudflare Pages mirror',
+                        status: 'unknown',
+                        error: null
+                    }
+                ],
+
+                async checkDomain(domain) {
+                    domain.status = 'checking';
+                    domain.error = null;
+                    
+                    try {
+                        const dnsCheck = await fetch(`https://dns.google/resolve?name=${domain.url}`);
+                        const dnsResult = await dnsCheck.json();
+                        
+                        if (!dnsResult.Answer) {
+                            domain.status = 'offline';
+                            domain.error = 'DNS not resolving';
+                            return;
+                        }
+
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                        try {
+                            const response = await fetch(`https://${domain.url}/logo.png`, {
+                                mode: 'no-cors',
+                                signal: controller.signal
+                            });
+                            clearTimeout(timeoutId);
+                            domain.status = 'online';
+                        } catch (error) {
+                            if (error.name === 'AbortError') {
+                                domain.status = 'offline';
+                                domain.error = 'Timeout';
+                            } else if (error.message.includes('BLOCKED')) {
+                                domain.status = 'blocked';
+                                domain.error = 'ISP blocked';
+                            } else {
+                                domain.status = 'offline';
+                                domain.error = 'Connection failed';
+                            }
+                        }
+                    } catch (error) {
+                        domain.status = 'offline';
+                        domain.error = 'Check failed';
+                    }
+                },
+
+                async checkAllDomains() {
+                    this.isChecking = true;
+                    await Promise.all(this.domains.map(domain => this.checkDomain(domain)));
+                    this.isChecking = false;
+                },
+
+                copyToClipboard(text) {
+                    navigator.clipboard.writeText(`https://${text}`);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+
+<!--
+ _   _                 
+| \ | | _____   ____ _ 
+|  \| |/ _ \ \ / / _` |
+| |\  | (_) \ V / (_| |
+|_| \_|\___/ \_/ \__,_|
+-->
