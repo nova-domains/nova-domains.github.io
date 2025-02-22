@@ -8,6 +8,11 @@
     <link rel="icon" type="image/x-icon" href="logo.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.3/cdn.min.js" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('#checkAllDomains').click();
+        });
+    </script>
     <style>
         @keyframes pulse {
             0% { opacity: 1; }
@@ -26,7 +31,7 @@
                 <span class="text-2xl font-bold text-purple-400">Nova Domains</span>
             </div>
             <p class="text-gray-400">Check which Nova domains are currently accessible. If one domain is blocked, try another!</p>
-            <button @click="checkAllDomains()" 
+            <button id="checkAllDomains" @click="checkAllDomains()" 
                     class="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors duration-300 flex items-center space-x-2 mx-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{'animate-spin': isChecking}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
